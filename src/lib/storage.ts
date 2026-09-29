@@ -26,17 +26,23 @@ function isTodo(value: unknown): value is Todo {
     !('id' in value) ||
     !('text' in value) ||
     !('completed' in value) ||
-    !('createdAt' in value)
+    !('createdAt' in value) ||
+    !('priority' in value)
   ) {
     return false
   }
+
+  const validPriorities = ['low', 'medium', 'high']
 
   return (
     typeof value.id === 'string' &&
     typeof value.text === 'string' &&
     value.text.trim() !== '' &&
     typeof value.completed === 'boolean' &&
-    typeof value.createdAt === 'number'
+    typeof value.createdAt === 'number' &&
+    validPriorities.includes(value.priority as string) &&
+    (!('dueDate' in value) || value.dueDate === undefined || typeof value.dueDate === 'number') &&
+    (!('category' in value) || value.category === undefined || typeof value.category === 'string')
   )
 }
 

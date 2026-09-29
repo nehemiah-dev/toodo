@@ -1,10 +1,17 @@
-import type { Todo } from '../types.ts'
+import type { Priority, Todo } from '../types.ts'
 
 export type TodoAction =
   | { type: 'added'; todo: Todo }
   | { type: 'toggled'; id: string }
   | { type: 'deleted'; id: string }
-  | { type: 'edited'; id: string; text: string }
+  | {
+      type: 'edited'
+      id: string
+      text: string
+      priority: Priority
+      category?: string
+      dueDate?: number
+    }
   | { type: 'toggledAll' }
   | { type: 'clearedCompleted' }
 
@@ -26,7 +33,15 @@ export function todosReducer(
 
     case 'edited':
       return todos.map((todo) =>
-        todo.id === action.id ? { ...todo, text: action.text } : todo,
+        todo.id === action.id
+          ? {
+              ...todo,
+              text: action.text,
+              priority: action.priority,
+              category: action.category,
+              dueDate: action.dueDate,
+            }
+          : todo,
       )
 
     case 'toggledAll': {

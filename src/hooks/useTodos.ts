@@ -2,14 +2,14 @@ import { useCallback, useEffect, useReducer } from 'react'
 import { createId } from '../lib/id.ts'
 import { readTodos, writeTodos } from '../lib/storage.ts'
 import { todosReducer } from '../lib/todosReducer.ts'
-import type { Todo } from '../types.ts'
+import type { Priority, Todo } from '../types.ts'
 
 export interface UseTodosResult {
   todos: readonly Todo[]
-  addTodo: (text: string) => void
+  addTodo: (text: string, priority: Priority, category?: string, dueDate?: number) => void
   toggleTodo: (id: string) => void
   deleteTodo: (id: string) => void
-  editTodo: (id: string, text: string) => void
+  editTodo: (id: string, text: string, priority: Priority, category?: string, dueDate?: number) => void
   toggleAll: () => void
   clearCompleted: () => void
 }
@@ -23,7 +23,7 @@ export function useTodos(): UseTodosResult {
 
   // Trimming lives here so blank tasks can never reach the list, whichever
   // caller dispatches them.
-  const addTodo = useCallback((text: string) => {
+  const addTodo = useCallback((text: string, priority: Priority, category?: string, dueDate?: number) => {
     const trimmed = text.trim()
     if (trimmed === '') {
       return
@@ -36,6 +36,9 @@ export function useTodos(): UseTodosResult {
         text: trimmed,
         completed: false,
         createdAt: Date.now(),
+        priority,
+        category,
+        dueDate,
       },
     })
   }, [])
@@ -48,12 +51,12 @@ export function useTodos(): UseTodosResult {
     dispatch({ type: 'deleted', id })
   }, [])
 
-  const editTodo = useCallback((id: string, text: string) => {
+  const editTodo = useCallback((id: string, text: string, priority: Priority, category?: string, dueDate?: number) => {
     const trimmed = text.trim()
     if (trimmed === '') {
       return
     }
-    dispatch({ type: 'edited', id, text: trimmed })
+    dispatch({ type: 'edited', id, text: trimmed, priority, category, dueDate })
   }, [])
 
   const toggleAll = useCallback(() => {
