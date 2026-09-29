@@ -28,8 +28,20 @@
   --duration-fast: 120ms;
 }
 
+[data-theme='dark'] {
+  --color-bg: #14171a;
+  --color-surface: #1c2024;
+  --color-border: #2c3136;
+  --color-text: #eceff2;
+  --color-text-muted: #9aa4ae;
+  --color-accent: #6d9bff;
+  --color-accent-text: #10141a;
+  --color-danger: #f07b6d;
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 40%);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --color-bg: #14171a;
     --color-surface: #1c2024;
     --color-border: #2c3136;

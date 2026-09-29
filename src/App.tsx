@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import AddTodoForm from './components/AddTodoForm.tsx'
+import ThemeToggle from './components/ThemeToggle.tsx'
 import TodoFilters from './components/TodoFilters.tsx'
 import TodoList from './components/TodoList.tsx'
 import TodoSummary from './components/TodoSummary.tsx'
@@ -19,8 +20,13 @@ function App() {
   return (
     <div className="app">
       <header className="app__header">
-        <h1 className="app__title">Toodo</h1>
-        <p className="app__tagline">A small, no-nonsense task list.</p>
+        <div className="app__header-content">
+          <div>
+            <h1 className="app__title">Toodo</h1>
+            <p className="app__tagline">A small, no-nonsense task list.</p>
+          </div>
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="app__main">

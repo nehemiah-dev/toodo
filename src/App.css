@@ -13,6 +13,34 @@
   gap: var(--space-1);
 }
 
+.app__header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-text);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color var(--duration-fast) ease,
+    border-color var(--duration-fast) ease;
+  white-space: nowrap;
+}
+
+.theme-toggle:hover {
+  background-color: var(--color-bg);
+  border-color: var(--color-accent);
+}
+
 .app__title {
   font-size: 1.75rem;
   letter-spacing: -0.02em;
@@ -43,6 +71,12 @@
 /* Add form */
 .add-form {
   display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.add-form__main {
+  display: flex;
   gap: var(--space-2);
 }
 
@@ -54,6 +88,39 @@
   border-radius: var(--radius-sm);
 }
 
+.add-form__input--small {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.add-form__metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  align-items: flex-end;
+}
+
+.add-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 0 1 auto;
+}
+
+.add-form__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.add-form__select {
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
 .add-form__button {
   padding: var(--space-3) var(--space-4);
   background-color: var(--color-accent);
@@ -63,6 +130,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: filter var(--duration-fast) ease;
+  white-space: nowrap;
 }
 
 .add-form__button:hover:not(:disabled) {
@@ -132,6 +200,7 @@
   gap: var(--space-3);
   padding: var(--space-3) 0;
   border-top: 1px solid var(--color-border);
+  flex-wrap: wrap;
 }
 
 .todo-item:first-child {
@@ -149,11 +218,101 @@
 .todo-item__text {
   flex: 1;
   overflow-wrap: anywhere;
+  min-width: 0;
 }
 
 .todo-item__text--done {
   color: var(--color-text-muted);
   text-decoration: line-through;
+}
+
+.todo-item__badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.priority-badge,
+.category-tag,
+.due-date-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.priority-badge--low {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+.priority-badge--medium {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.priority-badge--high {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+[data-theme='dark'] .priority-badge--low {
+  background-color: rgb(46 125 50 / 25%);
+  color: #a5d6a7;
+}
+
+[data-theme='dark'] .priority-badge--medium {
+  background-color: rgb(230 81 0 / 25%);
+  color: #ffb74d;
+}
+
+[data-theme='dark'] .priority-badge--high {
+  background-color: rgb(198 40 40 / 25%);
+  color: #ef5350;
+}
+
+.category-tag {
+  background-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.due-date-badge {
+  background-color: var(--color-border);
+  color: var(--color-text);
+}
+
+.due-date-badge--overdue {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.due-date-badge--today {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.due-date-badge--soon {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+[data-theme='dark'] .due-date-badge--overdue {
+  background-color: rgb(198 40 40 / 25%);
+  color: #ef5350;
+}
+
+[data-theme='dark'] .due-date-badge--today {
+  background-color: rgb(230 81 0 / 25%);
+  color: #ffb74d;
+}
+
+[data-theme='dark'] .due-date-badge--soon {
+  background-color: rgb(21 101 192 / 25%);
+  color: #64b5f6;
 }
 
 .todo-item__button {
@@ -263,11 +422,21 @@
 }
 
 /* Inline edit form inside a todo item */
+.todo-item--editing {
+  flex-direction: column;
+  align-items: stretch;
+}
+
 .todo-item__edit-form {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.todo-item__edit-main {
+  display: flex;
   gap: var(--space-2);
-  flex: 1;
 }
 
 .todo-item__edit-input {
@@ -278,6 +447,40 @@
   border-radius: var(--radius-sm);
   outline: none;
   box-shadow: 0 0 0 2px rgb(from var(--color-accent) r g b / 25%);
+}
+
+.todo-item__edit-input--small {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.todo-item__edit-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: flex-end;
+}
+
+.todo-item__edit-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 0 1 auto;
+}
+
+.todo-item__edit-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.todo-item__edit-select {
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  cursor: pointer;
 }
 
 /* Empty state */
