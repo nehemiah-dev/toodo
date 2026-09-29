@@ -4,19 +4,13 @@ import TodoList from './components/TodoList.tsx'
 import TodoSummary from './components/TodoSummary.tsx'
 import { useTodos } from './hooks/useTodos.ts'
 import { areAllCompleted, countActive } from './lib/filters.ts'
-import type { Filter, Todo } from './types.ts'
+import type { Filter } from './types.ts'
 import './App.css'
-
-const SEED_TODOS: readonly Todo[] = [
-  { id: 'seed-1', text: 'Read the project rules', completed: true, createdAt: 0 },
-  { id: 'seed-2', text: 'Plan the todo app', completed: true, createdAt: 0 },
-  { id: 'seed-3', text: 'Build the UI shell', completed: false, createdAt: 0 },
-]
 
 const ACTIVE_FILTER: Filter = 'all'
 
 function App() {
-  const { todos, addTodo, toggleTodo, deleteTodo } = useTodos(SEED_TODOS)
+  const { todos, addTodo, toggleTodo, deleteTodo } = useTodos()
   const activeCount = countActive(todos)
 
   return (

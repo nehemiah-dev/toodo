@@ -1,5 +1,6 @@
-import { useCallback, useReducer } from 'react'
+import { useCallback, useEffect, useReducer } from 'react'
 import { createId } from '../lib/id.ts'
+import { readTodos, writeTodos } from '../lib/storage.ts'
 import { todosReducer } from '../lib/todosReducer.ts'
 import type { Todo } from '../types.ts'
 
@@ -10,8 +11,12 @@ export interface UseTodosResult {
   deleteTodo: (id: string) => void
 }
 
-export function useTodos(initialTodos: readonly Todo[] = []): UseTodosResult {
-  const [todos, dispatch] = useReducer(todosReducer, initialTodos)
+export function useTodos(): UseTodosResult {
+  const [todos, dispatch] = useReducer(todosReducer, undefined, readTodos)
+
+  useEffect(() => {
+    writeTodos(todos)
+  }, [todos])
 
   // Trimming lives here so blank tasks can never reach the list, whichever
   // caller dispatches them.
@@ -42,4 +47,5 @@ export function useTodos(initialTodos: readonly Todo[] = []): UseTodosResult {
 
   return { todos, addTodo, toggleTodo, deleteTodo }
 }
+
 
