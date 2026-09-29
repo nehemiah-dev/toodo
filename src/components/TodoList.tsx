@@ -1,16 +1,24 @@
-import type { Todo } from '../types.ts'
-import EmptyState from './EmptyState.tsx'
+import EmptyState, { type EmptyStateVariant } from './EmptyState.tsx'
 import TodoItem from './TodoItem.tsx'
+import type { Todo } from '../types.ts'
 
 interface TodoListProps {
   todos: readonly Todo[]
+  emptyVariant: EmptyStateVariant
   onToggle: (id: string) => void
   onDelete: (id: string) => void
+  onEdit: (id: string, text: string) => void
 }
 
-function TodoList({ todos, onToggle, onDelete }: TodoListProps) {
+function TodoList({
+  todos,
+  emptyVariant,
+  onToggle,
+  onDelete,
+  onEdit,
+}: TodoListProps) {
   if (todos.length === 0) {
-    return <EmptyState variant="no-todos" />
+    return <EmptyState variant={emptyVariant} />
   }
 
   return (
@@ -21,6 +29,7 @@ function TodoList({ todos, onToggle, onDelete }: TodoListProps) {
           todo={todo}
           onToggle={onToggle}
           onDelete={onDelete}
+          onEdit={onEdit}
         />
       ))}
     </ul>
@@ -28,4 +37,5 @@ function TodoList({ todos, onToggle, onDelete }: TodoListProps) {
 }
 
 export default TodoList
+
 

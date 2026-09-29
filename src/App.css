@@ -82,6 +82,9 @@
 }
 
 .filters__button {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   padding: var(--space-1) var(--space-3);
   background-color: transparent;
   border: 1px solid var(--color-border);
@@ -91,6 +94,20 @@
   transition: color var(--duration-fast) ease,
     border-color var(--duration-fast) ease,
     background-color var(--duration-fast) ease;
+}
+
+.filters__count {
+  padding: 0 0.375rem;
+  border-radius: var(--radius-pill);
+  background-color: var(--color-border);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.filters__button--active .filters__count {
+  background-color: rgb(255 255 255 / 25%);
+  color: var(--color-accent-text);
 }
 
 .filters__button:hover {
@@ -243,6 +260,24 @@
 .summary__clear:hover {
   color: var(--color-danger);
   border-color: var(--color-border);
+}
+
+/* Inline edit form inside a todo item */
+.todo-item__edit-form {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: 1;
+}
+
+.todo-item__edit-input {
+  flex: 1;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(from var(--color-accent) r g b / 25%);
 }
 
 /* Empty state */
