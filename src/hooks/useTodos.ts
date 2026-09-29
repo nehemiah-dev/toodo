@@ -12,6 +12,8 @@ export interface UseTodosResult {
   editTodo: (id: string, text: string, priority: Priority, category?: string, dueDate?: number) => void
   toggleAll: () => void
   clearCompleted: () => void
+  exportTodos: () => void
+  importTodos: (file: File) => Promise<void>
 }
 
 export function useTodos(): UseTodosResult {
@@ -67,7 +69,35 @@ export function useTodos(): UseTodosResult {
     dispatch({ type: 'clearedCompleted' })
   }, [])
 
-  return { todos, addTodo, toggleTodo, deleteTodo, editTodo, toggleAll, clearCompleted }
+  const exportTodos = useCallback(() => {
+    const data = JSON.stringify(todos, null, 2)
+    const blob = new Blob([data], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `toodo-backup-${new Date().toISOString().slice(0, 10)}.json`
+    link.click()
+    URL.revokeObjectURL(url)
+  }, [todos])
+
+  const importTodos = useCallback(async (file: File) => {
+    try {
+      const text = await file.text()
+      const parsed = JSON.parse(text)
+      
+      if (!Array.isArray(parsed)) {
+        alert('Invalid file format: expected an array of todos')
+        return
+      }
+
+      // Replace all todos with imported ones
+      dispatch({ type: 'imported', todos: parsed })
+    } catch (error) {
+      alert('Failed to import todos: ' + (error instanceof Error ? error.message : 'Unknown error'))
+    }
+  }, [])
+
+  return { todos, addTodo, toggleTodo, deleteTodo, editTodo, toggleAll, clearCompleted, exportTodos, importTodos }
 }
 
 

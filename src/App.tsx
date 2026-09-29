@@ -22,7 +22,7 @@ import type { Filter } from './types.ts'
 import './App.css'
 
 function App() {
-  const { todos, addTodo, toggleTodo, deleteTodo, editTodo, toggleAll, clearCompleted } = useTodos()
+  const { todos, addTodo, toggleTodo, deleteTodo, editTodo, toggleAll, clearCompleted, exportTodos, importTodos } = useTodos()
   const [filter, setFilter] = useState<Filter>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterState>({
@@ -88,6 +88,8 @@ function App() {
           allCompleted={areAllCompleted(todos)}
           onToggleAll={toggleAll}
           onClearCompleted={clearCompleted}
+          onExport={exportTodos}
+          onImport={importTodos}
         />
       </main>
 

@@ -14,6 +14,7 @@ export type TodoAction =
     }
   | { type: 'toggledAll' }
   | { type: 'clearedCompleted' }
+  | { type: 'imported'; todos: readonly Todo[] }
 
 export function todosReducer(
   todos: readonly Todo[],
@@ -51,6 +52,9 @@ export function todosReducer(
 
     case 'clearedCompleted':
       return todos.filter((todo) => !todo.completed)
+
+    case 'imported':
+      return action.todos
   }
 }
 
