@@ -1,21 +1,46 @@
 import { useMemo, useState } from 'react'
 import AddTodoForm from './components/AddTodoForm.tsx'
+import AdvancedFilters, {
+  type AdvancedFilterState,
+} from './components/AdvancedFilters.tsx'
+import SearchBar from './components/SearchBar.tsx'
 import ThemeToggle from './components/ThemeToggle.tsx'
 import TodoFilters from './components/TodoFilters.tsx'
 import TodoList from './components/TodoList.tsx'
 import TodoSummary from './components/TodoSummary.tsx'
 import { useTodos } from './hooks/useTodos.ts'
-import { areAllCompleted, countActive, filterTodos } from './lib/filters.ts'
+import {
+  areAllCompleted,
+  countActive,
+  filterByCategory,
+  filterByPriority,
+  filterTodos,
+  getUniqueCategories,
+  searchTodos,
+} from './lib/filters.ts'
 import type { Filter } from './types.ts'
 import './App.css'
 
 function App() {
   const { todos, addTodo, toggleTodo, deleteTodo, editTodo, toggleAll, clearCompleted } = useTodos()
   const [filter, setFilter] = useState<Filter>('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterState>({
+    priorities: new Set(),
+    categories: new Set(),
+  })
 
   const activeCount = countActive(todos)
   const completedCount = todos.length - activeCount
-  const visibleTodos = useMemo(() => filterTodos(todos, filter), [todos, filter])
+  const availableCategories = useMemo(() => getUniqueCategories(todos), [todos])
+
+  const visibleTodos = useMemo(() => {
+    let filtered = filterTodos(todos, filter)
+    filtered = searchTodos(filtered, searchQuery)
+    filtered = filterByPriority(filtered, advancedFilters.priorities)
+    filtered = filterByCategory(filtered, advancedFilters.categories)
+    return filtered
+  }, [todos, filter, searchQuery, advancedFilters])
 
   return (
     <div className="app">
@@ -31,6 +56,11 @@ function App() {
 
       <main className="app__main">
         <AddTodoForm onAdd={addTodo} />
+        <SearchBar
+          value={searchQuery}
+          onChange={setSearchQuery}
+          onClear={() => setSearchQuery('')}
+        />
         <TodoFilters
           activeFilter={filter}
           counts={{
@@ -39,6 +69,11 @@ function App() {
             completed: completedCount,
           }}
           onFilterChange={setFilter}
+        />
+        <AdvancedFilters
+          filters={advancedFilters}
+          availableCategories={availableCategories}
+          onChange={setAdvancedFilters}
         />
         <TodoList
           todos={visibleTodos}
