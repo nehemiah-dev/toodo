@@ -16,7 +16,7 @@ const SEED_TODOS: readonly Todo[] = [
 const ACTIVE_FILTER: Filter = 'all'
 
 function App() {
-  const { todos, addTodo } = useTodos(SEED_TODOS)
+  const { todos, addTodo, toggleTodo, deleteTodo } = useTodos(SEED_TODOS)
   const activeCount = countActive(todos)
 
   return (
@@ -29,7 +29,7 @@ function App() {
       <main className="app__main">
         <AddTodoForm onAdd={addTodo} />
         <TodoFilters activeFilter={ACTIVE_FILTER} />
-        <TodoList todos={todos} />
+        <TodoList todos={todos} onToggle={toggleTodo} onDelete={deleteTodo} />
         <TodoSummary
           activeCount={activeCount}
           completedCount={todos.length - activeCount}

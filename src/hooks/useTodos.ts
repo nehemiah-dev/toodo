@@ -6,6 +6,8 @@ import type { Todo } from '../types.ts'
 export interface UseTodosResult {
   todos: readonly Todo[]
   addTodo: (text: string) => void
+  toggleTodo: (id: string) => void
+  deleteTodo: (id: string) => void
 }
 
 export function useTodos(initialTodos: readonly Todo[] = []): UseTodosResult {
@@ -30,5 +32,14 @@ export function useTodos(initialTodos: readonly Todo[] = []): UseTodosResult {
     })
   }, [])
 
-  return { todos, addTodo }
+  const toggleTodo = useCallback((id: string) => {
+    dispatch({ type: 'toggled', id })
+  }, [])
+
+  const deleteTodo = useCallback((id: string) => {
+    dispatch({ type: 'deleted', id })
+  }, [])
+
+  return { todos, addTodo, toggleTodo, deleteTodo }
 }
+
