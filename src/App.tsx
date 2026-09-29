@@ -2,6 +2,7 @@ import AddTodoForm from './components/AddTodoForm.tsx'
 import TodoFilters from './components/TodoFilters.tsx'
 import TodoList from './components/TodoList.tsx'
 import TodoSummary from './components/TodoSummary.tsx'
+import { useTodos } from './hooks/useTodos.ts'
 import { areAllCompleted, countActive } from './lib/filters.ts'
 import type { Filter, Todo } from './types.ts'
 import './App.css'
@@ -15,7 +16,8 @@ const SEED_TODOS: readonly Todo[] = [
 const ACTIVE_FILTER: Filter = 'all'
 
 function App() {
-  const activeCount = countActive(SEED_TODOS)
+  const { todos, addTodo } = useTodos(SEED_TODOS)
+  const activeCount = countActive(todos)
 
   return (
     <div className="app">
@@ -25,13 +27,13 @@ function App() {
       </header>
 
       <main className="app__main">
-        <AddTodoForm />
+        <AddTodoForm onAdd={addTodo} />
         <TodoFilters activeFilter={ACTIVE_FILTER} />
-        <TodoList todos={SEED_TODOS} />
+        <TodoList todos={todos} />
         <TodoSummary
           activeCount={activeCount}
-          completedCount={SEED_TODOS.length - activeCount}
-          allCompleted={areAllCompleted(SEED_TODOS)}
+          completedCount={todos.length - activeCount}
+          allCompleted={areAllCompleted(todos)}
         />
       </main>
 
@@ -41,3 +43,4 @@ function App() {
 }
 
 export default App
+

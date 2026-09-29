@@ -65,8 +65,13 @@
   transition: filter var(--duration-fast) ease;
 }
 
-.add-form__button:hover {
+.add-form__button:hover:not(:disabled) {
   filter: brightness(1.06);
+}
+
+.add-form__button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 /* Filters */
