@@ -5,6 +5,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  animation: fadeIn 300ms ease;
 }
 
 .app__header {
@@ -60,12 +61,14 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
+  animation: slideIn 400ms ease;
 }
 
 .app__footer {
   color: var(--color-text-muted);
   font-size: 0.8125rem;
   text-align: center;
+  animation: fadeIn 600ms ease;
 }
 
 /* Add form */
@@ -86,6 +89,13 @@
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
+  transition: border-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
+}
+
+.add-form__input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgb(from var(--color-accent) r g b / 15%);
 }
 
 .add-form__input--small {
@@ -156,6 +166,13 @@
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
+  transition: border-color var(--duration-fast) ease,
+    box-shadow var(--duration-fast) ease;
+}
+
+.search-bar__input:focus {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 2px rgb(from var(--color-accent) r g b / 15%);
 }
 
 .search-bar__clear {
@@ -338,6 +355,15 @@
   padding: var(--space-3) 0;
   border-top: 1px solid var(--color-border);
   flex-wrap: wrap;
+  animation: fadeIn 200ms ease;
+  transition: background-color var(--duration-fast) ease;
+}
+
+.todo-item:hover {
+  background-color: rgb(from var(--color-border) r g b / 30%);
+  margin-inline: calc(-1 * var(--space-2));
+  padding-inline: var(--space-2);
+  border-radius: var(--radius-sm);
 }
 
 .todo-item:first-child {
@@ -556,6 +582,35 @@
 .summary__clear:hover {
   color: var(--color-danger);
   border-color: var(--color-border);
+}
+
+.summary__actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.summary__action {
+  padding: var(--space-1) var(--space-2);
+  background-color: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: color var(--duration-fast) ease,
+    border-color var(--duration-fast) ease,
+    background-color var(--duration-fast) ease;
+}
+
+.summary__action:hover:not(:disabled) {
+  color: var(--color-text);
+  border-color: var(--color-accent);
+  background-color: rgb(from var(--color-accent) r g b / 10%);
+}
+
+.summary__action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* Inline edit form inside a todo item */
