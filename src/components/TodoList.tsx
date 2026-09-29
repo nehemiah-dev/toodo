@@ -1,13 +1,13 @@
 import EmptyState, { type EmptyStateVariant } from './EmptyState.tsx'
 import TodoItem from './TodoItem.tsx'
-import type { Todo } from '../types.ts'
+import type { Priority, Todo } from '../types.ts'
 
 interface TodoListProps {
   todos: readonly Todo[]
   emptyVariant: EmptyStateVariant
   onToggle: (id: string) => void
   onDelete: (id: string) => void
-  onEdit: (id: string, text: string) => void
+  onEdit: (id: string, text: string, priority: Priority, category?: string, dueDate?: number) => void
 }
 
 function TodoList({
