@@ -1,6 +1,7 @@
 # Local agent rules — never committed
 .kilo
 .clinerules
+.kiro
 
 # Dependencies
 node_modules

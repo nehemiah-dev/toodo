@@ -18,3 +18,19 @@ export function countActive(todos: readonly Todo[]): number {
 export function areAllCompleted(todos: readonly Todo[]): boolean {
   return todos.length > 0 && todos.every((todo) => todo.completed)
 }
+
+export function filterTodos(
+  todos: readonly Todo[],
+  filter: Filter,
+): readonly Todo[] {
+  switch (filter) {
+    case 'all':
+      return todos
+
+    case 'active':
+      return todos.filter((todo) => !todo.completed)
+
+    case 'completed':
+      return todos.filter((todo) => todo.completed)
+  }
+}
