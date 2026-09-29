@@ -9,6 +9,9 @@ export interface UseTodosResult {
   addTodo: (text: string) => void
   toggleTodo: (id: string) => void
   deleteTodo: (id: string) => void
+  editTodo: (id: string, text: string) => void
+  toggleAll: () => void
+  clearCompleted: () => void
 }
 
 export function useTodos(): UseTodosResult {
@@ -45,7 +48,23 @@ export function useTodos(): UseTodosResult {
     dispatch({ type: 'deleted', id })
   }, [])
 
-  return { todos, addTodo, toggleTodo, deleteTodo }
+  const editTodo = useCallback((id: string, text: string) => {
+    const trimmed = text.trim()
+    if (trimmed === '') {
+      return
+    }
+    dispatch({ type: 'edited', id, text: trimmed })
+  }, [])
+
+  const toggleAll = useCallback(() => {
+    dispatch({ type: 'toggledAll' })
+  }, [])
+
+  const clearCompleted = useCallback(() => {
+    dispatch({ type: 'clearedCompleted' })
+  }, [])
+
+  return { todos, addTodo, toggleTodo, deleteTodo, editTodo, toggleAll, clearCompleted }
 }
 
 
