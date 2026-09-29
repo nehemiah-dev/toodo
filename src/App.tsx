@@ -1,17 +1,20 @@
+import { useMemo, useState } from 'react'
 import AddTodoForm from './components/AddTodoForm.tsx'
 import TodoFilters from './components/TodoFilters.tsx'
 import TodoList from './components/TodoList.tsx'
 import TodoSummary from './components/TodoSummary.tsx'
 import { useTodos } from './hooks/useTodos.ts'
-import { areAllCompleted, countActive } from './lib/filters.ts'
+import { areAllCompleted, countActive, filterTodos } from './lib/filters.ts'
 import type { Filter } from './types.ts'
 import './App.css'
 
-const ACTIVE_FILTER: Filter = 'all'
-
 function App() {
-  const { todos, addTodo, toggleTodo, deleteTodo } = useTodos()
+  const { todos, addTodo, toggleTodo, deleteTodo, editTodo, toggleAll, clearCompleted } = useTodos()
+  const [filter, setFilter] = useState<Filter>('all')
+
   const activeCount = countActive(todos)
+  const completedCount = todos.length - activeCount
+  const visibleTodos = useMemo(() => filterTodos(todos, filter), [todos, filter])
 
   return (
     <div className="app">
@@ -22,12 +25,28 @@ function App() {
 
       <main className="app__main">
         <AddTodoForm onAdd={addTodo} />
-        <TodoFilters activeFilter={ACTIVE_FILTER} />
-        <TodoList todos={todos} onToggle={toggleTodo} onDelete={deleteTodo} />
+        <TodoFilters
+          activeFilter={filter}
+          counts={{
+            all: todos.length,
+            active: activeCount,
+            completed: completedCount,
+          }}
+          onFilterChange={setFilter}
+        />
+        <TodoList
+          todos={visibleTodos}
+          emptyVariant={todos.length === 0 ? 'no-todos' : 'no-matches'}
+          onToggle={toggleTodo}
+          onDelete={deleteTodo}
+          onEdit={editTodo}
+        />
         <TodoSummary
           activeCount={activeCount}
-          completedCount={todos.length - activeCount}
+          completedCount={completedCount}
           allCompleted={areAllCompleted(todos)}
+          onToggleAll={toggleAll}
+          onClearCompleted={clearCompleted}
         />
       </main>
 
@@ -37,4 +56,5 @@ function App() {
 }
 
 export default App
+
 

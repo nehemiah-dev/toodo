@@ -2,19 +2,29 @@ interface TodoSummaryProps {
   activeCount: number
   completedCount: number
   allCompleted: boolean
+  onToggleAll: () => void
+  onClearCompleted: () => void
 }
 
 function TodoSummary({
   activeCount,
   completedCount,
   allCompleted,
+  onToggleAll,
+  onClearCompleted,
 }: TodoSummaryProps) {
   const isEmpty = activeCount + completedCount === 0
 
   return (
     <div className="summary">
       <label className="summary__toggle">
-        <input type="checkbox" checked={allCompleted} readOnly disabled={isEmpty} />
+        <input
+          type="checkbox"
+          checked={allCompleted}
+          onChange={onToggleAll}
+          disabled={isEmpty}
+          aria-label="Toggle all tasks"
+        />
         <span>Toggle all</span>
       </label>
 
@@ -23,7 +33,7 @@ function TodoSummary({
       </p>
 
       {completedCount > 0 && (
-        <button type="button" className="summary__clear">
+        <button type="button" className="summary__clear" onClick={onClearCompleted}>
           Clear completed ({completedCount})
         </button>
       )}
