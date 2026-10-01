@@ -8,7 +8,7 @@ interface PriorityBadgeProps {
 function PriorityBadge({ priority, className = '' }: PriorityBadgeProps) {
   const label = {
     low: 'Low',
-    medium: 'Med',
+    medium: 'Medium',
     high: 'High',
   }[priority]
 
