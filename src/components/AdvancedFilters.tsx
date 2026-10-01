@@ -38,10 +38,6 @@ function AdvancedFilters({
 
   const hasActiveFilters = filters.priorities.size > 0 || filters.categories.size > 0
 
-  if (availableCategories.length === 0) {
-    return null
-  }
-
   return (
     <div className="advanced-filters">
       <details className="advanced-filters__details">
