@@ -1,4 +1,4 @@
-import type { Filter, Priority, Todo } from '../types.ts'
+import type { Filter, Priority, SortBy, Todo } from '../types.ts'
 
 export interface FilterOption {
   readonly value: Filter
@@ -43,11 +43,12 @@ export function searchTodos(
     return todos
   }
 
-  const lowerQuery = query.toLowerCase()
+  const lowerQuery = query.trim().toLowerCase()
   return todos.filter(
     (todo) =>
-      todo.text.toLowerCase().includes(lowerQuery) ||
-      (todo.category && todo.category.toLowerCase().includes(lowerQuery)),
+      todo.title.toLowerCase().includes(lowerQuery) ||
+      todo.description?.toLowerCase().includes(lowerQuery) ||
+      todo.category.toLowerCase().includes(lowerQuery),
   )
 }
 
@@ -79,4 +80,20 @@ export function getUniqueCategories(todos: readonly Todo[]): readonly string[] {
     }
   }
   return Array.from(categories).sort()
+}
+
+export function sortTodos(todos: readonly Todo[], sortBy: SortBy): readonly Todo[] {
+  const priorityRank: Record<Priority, number> = { high: 0, medium: 1, low: 2 }
+  return [...todos].sort((left, right) => {
+    switch (sortBy) {
+      case 'dueDate':
+        return left.dueDate.localeCompare(right.dueDate)
+      case 'priority':
+        return priorityRank[left.priority] - priorityRank[right.priority]
+      case 'createdAt':
+        return right.createdAt.localeCompare(left.createdAt)
+      case 'title':
+        return left.title.localeCompare(right.title)
+    }
+  })
 }

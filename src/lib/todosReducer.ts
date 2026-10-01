@@ -2,19 +2,22 @@ import type { Priority, Todo } from '../types.ts'
 
 export type TodoAction =
   | { type: 'added'; todo: Todo }
-  | { type: 'toggled'; id: string }
+  | { type: 'toggled'; id: string; updatedAt: string }
   | { type: 'deleted'; id: string }
   | {
       type: 'edited'
       id: string
-      text: string
+      title: string
+      description?: string
       priority: Priority
-      category?: string
-      dueDate?: number
+      category: string
+      dueDate: string
+      updatedAt: string
     }
-  | { type: 'toggledAll' }
+  | { type: 'toggledAll'; updatedAt: string }
   | { type: 'clearedCompleted' }
   | { type: 'imported'; todos: readonly Todo[] }
+  | { type: 'addedImported'; todos: readonly Todo[] }
 
 export function todosReducer(
   todos: readonly Todo[],
@@ -26,7 +29,9 @@ export function todosReducer(
 
     case 'toggled':
       return todos.map((todo) =>
-        todo.id === action.id ? { ...todo, completed: !todo.completed } : todo,
+        todo.id === action.id
+          ? { ...todo, completed: !todo.completed, updatedAt: action.updatedAt }
+          : todo,
       )
 
     case 'deleted':
@@ -37,17 +42,19 @@ export function todosReducer(
         todo.id === action.id
           ? {
               ...todo,
-              text: action.text,
+              title: action.title,
+              description: action.description,
               priority: action.priority,
               category: action.category,
               dueDate: action.dueDate,
+              updatedAt: action.updatedAt,
             }
           : todo,
       )
 
     case 'toggledAll': {
       const allDone = todos.every((todo) => todo.completed)
-      return todos.map((todo) => ({ ...todo, completed: !allDone }))
+      return todos.map((todo) => ({ ...todo, completed: !allDone, updatedAt: action.updatedAt }))
     }
 
     case 'clearedCompleted':
@@ -55,6 +62,9 @@ export function todosReducer(
 
     case 'imported':
       return action.todos
+
+    case 'addedImported':
+      return [...action.todos, ...todos]
   }
 }
 
