@@ -5,7 +5,7 @@ const MESSAGES = {
   },
   'no-matches': {
     title: 'No tasks match this filter',
-    hint: 'Try a different filter to see your tasks.',
+    hint: 'Try adjusting your search or filters.',
   },
 } as const
 
@@ -19,10 +19,10 @@ function EmptyState({ variant }: EmptyStateProps) {
   const { title, hint } = MESSAGES[variant]
 
   return (
-    <p className="empty-state">
-      <strong className="empty-state__title">{title}</strong>
-      <span className="empty-state__hint">{hint}</span>
-    </p>
+    <div className="empty-state">
+      <p className="empty-state__title">{title}</p>
+      <p className="empty-state__hint">{hint}</p>
+    </div>
   )
 }
 
