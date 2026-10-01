@@ -709,7 +709,13 @@ textarea.todo-item__edit-input {
 }
 
 .empty-state__title {
+  font-weight: 600;
   color: var(--color-text);
+}
+
+.empty-state__hint {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
 }
 
 .sort-control {
