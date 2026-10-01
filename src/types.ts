@@ -8,6 +8,7 @@ export interface Task {
   dueDate: string
   priority: Priority
   completed: boolean
+  completedAt?: string
   createdAt: string
   updatedAt: string
 }

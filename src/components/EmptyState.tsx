@@ -1,7 +1,23 @@
 const MESSAGES = {
   'no-todos': {
     title: 'Nothing here yet',
-    hint: 'Add your first task above to get started.',
+    hint: 'Add your first task to get started.',
+  },
+  'no-active': {
+    title: 'No active tasks',
+    hint: 'All tasks are complete. New tasks will appear here.',
+  },
+  'no-completed': {
+    title: 'No completed tasks',
+    hint: 'Tasks you complete will appear here.',
+  },
+  'no-search': {
+    title: 'No tasks match your search',
+    hint: 'Try another title, description, or category.',
+  },
+  'no-category': {
+    title: 'No tasks in this category',
+    hint: 'Tasks assigned to this category will appear here.',
   },
   'no-matches': {
     title: 'No tasks match this filter',

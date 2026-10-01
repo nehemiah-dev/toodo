@@ -290,7 +290,7 @@ function TodoItem({ todo, onToggle, onDelete, onEdit }: TodoItemProps) {
         <DueDateBadge dueDate={todo.dueDate} completed={todo.completed} />
         {todo.completed && (
           <span className="todo-item__completed-date">
-            Completed {formatCompletedDate(todo.updatedAt)}
+            Completed {formatCompletedDate(todo.completedAt ?? todo.updatedAt)}
           </span>
         )}
       </div>

@@ -10,12 +10,17 @@ export interface TaskBackup {
 
 export type ImportMode = 'add' | 'replace'
 
-export function createBackup(tasks: readonly Task[]): TaskBackup {
+export function createBackup(
+  tasks: readonly Task[],
+  categories: readonly string[],
+): TaskBackup {
   return {
     version: 1,
     exportedAt: new Date().toISOString(),
     tasks,
-    categories: Array.from(new Set(tasks.map((task) => task.category))).sort(),
+    categories: Array.from(
+      new Set([...categories, ...tasks.map((task) => task.category)]),
+    ).sort(),
   }
 }
 

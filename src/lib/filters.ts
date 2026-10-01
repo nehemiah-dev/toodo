@@ -86,8 +86,16 @@ export function sortTodos(todos: readonly Todo[], sortBy: SortBy): readonly Todo
   const priorityRank: Record<Priority, number> = { high: 0, medium: 1, low: 2 }
   return [...todos].sort((left, right) => {
     switch (sortBy) {
-      case 'dueDate':
-        return left.dueDate.localeCompare(right.dueDate)
+      case 'dueDate': {
+        if (left.completed !== right.completed) return left.completed ? 1 : -1
+        if (left.completed) {
+          return (right.completedAt ?? right.updatedAt).localeCompare(
+            left.completedAt ?? left.updatedAt,
+          )
+        }
+        const dueDateOrder = left.dueDate.localeCompare(right.dueDate)
+        return dueDateOrder || priorityRank[left.priority] - priorityRank[right.priority]
+      }
       case 'priority':
         return priorityRank[left.priority] - priorityRank[right.priority]
       case 'createdAt':

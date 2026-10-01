@@ -41,6 +41,9 @@ export function isValidTask(value: unknown): value is Task {
     !Number.isNaN(Date.parse(value.createdAt)) &&
     typeof value.updatedAt === 'string' &&
     !Number.isNaN(Date.parse(value.updatedAt)) &&
+    (!('completedAt' in value) ||
+      (typeof value.completedAt === 'string' &&
+        !Number.isNaN(Date.parse(value.completedAt)))) &&
     (!('description' in value) || typeof value.description === 'string')
   )
 }

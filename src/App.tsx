@@ -6,13 +6,13 @@ import TodoFilters from './components/TodoFilters.tsx'
 import TodoList from './components/TodoList.tsx'
 import TodoSummary from './components/TodoSummary.tsx'
 import { useTodos } from './hooks/useTodos.ts'
+import ImportPreview from './components/ImportPreview.tsx'
 import type { ImportMode, TaskBackup } from './lib/importExport.ts'
 import {
   areAllCompleted,
   countActive,
   filterByCategory,
   filterTodos,
-  getUniqueCategories,
   searchTodos,
   sortTodos,
 } from './lib/filters.ts'
@@ -22,12 +22,14 @@ import './App.css'
 function App() {
   const {
     todos,
+    categories,
     addTodo,
     toggleTodo,
     deleteTodo,
     editTodo,
     toggleAll,
     clearCompleted,
+    addCategory,
     exportTodos,
     readImportFile,
     importTodos,
@@ -38,6 +40,8 @@ function App() {
   const [sortBy, setSortBy] = useState<SortBy>('dueDate')
   const [searchQuery, setSearchQuery] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
+  const [importPreview, setImportPreview] = useState<TaskBackup | null>(null)
+  const [newCategory, setNewCategory] = useState('')
   const [notice, setNotice] = useState('')
 
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -45,8 +49,6 @@ function App() {
 
   const activeCount = countActive(todos)
   const completedCount = todos.length - activeCount
-  const availableCategories = useMemo(() => getUniqueCategories(todos), [todos])
-
   const visibleTodos = useMemo(() => {
     let result = filterTodos(todos, filter)
     result = searchTodos(result, searchQuery)
@@ -145,6 +147,20 @@ function App() {
     setNotice('Backup exported.')
   }
 
+  function handleAddCategory(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const trimmedCategory = newCategory.trim()
+    if (
+      trimmedCategory === '' ||
+      categories.some((category) => category.toLocaleLowerCase() === trimmedCategory.toLocaleLowerCase())
+    ) {
+      return
+    }
+    addCategory(trimmedCategory)
+    setNewCategory('')
+    setNotice(`Category added: ${trimmedCategory}.`)
+  }
+
   async function handleImportFile(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
@@ -160,20 +176,22 @@ function App() {
       return
     }
 
-    const wantsReplace = window.confirm(
-      `Found ${backup.tasks.length} task${backup.tasks.length === 1 ? '' : 's'}.\n\n` +
-        'Replace all current tasks?\n\nOK = Replace   Cancel = Add to existing',
-    )
-    const mode: ImportMode = wantsReplace ? 'replace' : 'add'
+    setImportPreview(backup)
+  }
 
-    if (mode === 'replace' && todos.length > 0) {
+  function handleApplyImport(mode: ImportMode) {
+    const backup = importPreview
+    if (!backup) return
+
+    if (mode === 'replace' && (todos.length > 0 || categories.length > 0)) {
       const confirmed = window.confirm(
-        `This will permanently remove your ${todos.length} current task${todos.length === 1 ? '' : 's'}. Continue?`,
+        `This will permanently replace ${todos.length} task${todos.length === 1 ? '' : 's'} and ${categories.length} categor${categories.length === 1 ? 'y' : 'ies'}. Continue?`,
       )
       if (!confirmed) return
     }
 
     importTodos(backup, mode)
+    setImportPreview(null)
     setNotice(
       mode === 'replace'
         ? `Replaced with ${backup.tasks.length} imported task${backup.tasks.length === 1 ? '' : 's'}.`
@@ -187,6 +205,17 @@ function App() {
     : { all: 'Tasks', active: 'Active tasks', completed: 'Completed tasks' }[filter]
 
   const taskCount = visibleTodos.length
+  const emptyVariant = todos.length === 0
+    ? 'no-todos'
+    : categoryFilter !== null && visibleTodos.length === 0
+      ? 'no-category'
+      : searchQuery.trim() !== '' && visibleTodos.length === 0
+        ? 'no-search'
+        : filter === 'active' && activeCount === 0
+          ? 'no-active'
+          : filter === 'completed' && completedCount === 0
+            ? 'no-completed'
+            : 'no-matches'
 
   return (
     <div className="app">
@@ -211,11 +240,10 @@ function App() {
         </nav>
 
         {/* Categories */}
-        {availableCategories.length > 0 && (
-          <section className="sidebar__section" aria-label="Filter by category">
+        <section className="sidebar__section" aria-label="Filter by category">
             <h2 className="sidebar__section-title">Categories</h2>
             <ul className="sidebar__category-list">
-              {availableCategories.map((cat) => (
+              {categories.map((cat) => (
                 <li key={cat}>
                   <button
                     type="button"
@@ -231,8 +259,23 @@ function App() {
                 </li>
               ))}
             </ul>
+            <form className="sidebar__new-category" onSubmit={handleAddCategory}>
+              <label className="visually-hidden" htmlFor="new-category-navigation">
+                New category
+              </label>
+              <input
+                id="new-category-navigation"
+                type="text"
+                value={newCategory}
+                onChange={(event) => setNewCategory(event.target.value)}
+                placeholder="New category"
+                maxLength={40}
+              />
+              <button type="submit" disabled={newCategory.trim() === ''}>
+                Add
+              </button>
+            </form>
           </section>
-        )}
 
         {/* Sidebar footer: data actions + theme */}
         <div className="sidebar__footer">
@@ -240,7 +283,7 @@ function App() {
             type="button"
             className="sidebar__action"
             onClick={handleExport}
-            disabled={todos.length === 0}
+            disabled={todos.length === 0 && categories.length === 0}
             title="Export tasks as JSON backup"
           >
             Export
@@ -317,7 +360,7 @@ function App() {
         {/* Task list */}
         <TodoList
           todos={visibleTodos}
-          emptyVariant={todos.length === 0 ? 'no-todos' : 'no-matches'}
+          emptyVariant={emptyVariant}
           onToggle={handleToggle}
           onDelete={handleDelete}
           onEdit={handleEdit}
@@ -350,6 +393,12 @@ function App() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         onAdd={handleAdd}
+      />
+
+      <ImportPreview
+        backup={importPreview}
+        onClose={() => setImportPreview(null)}
+        onImport={handleApplyImport}
       />
 
       {/* ── Toast ────────────────────────────────────────────────────── */}

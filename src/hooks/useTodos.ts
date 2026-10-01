@@ -1,29 +1,32 @@
 import { useCallback, useEffect, useReducer } from 'react'
 import { createId } from '../lib/id.ts'
 import { createBackup, readBackupFile, type ImportMode, type TaskBackup } from '../lib/importExport.ts'
-import { readTodos, writeTodos } from '../lib/storage.ts'
+import { readTodoData, writeTodoData } from '../lib/storage.ts'
 import { todosReducer } from '../lib/todosReducer.ts'
 import type { Priority, Todo } from '../types.ts'
 
 export interface UseTodosResult {
   todos: readonly Todo[]
+  categories: readonly string[]
   addTodo: (title: string, description: string, category: string, dueDate: string, priority: Priority) => void
   toggleTodo: (id: string) => void
   deleteTodo: (id: string) => void
   editTodo: (id: string, title: string, description: string, category: string, dueDate: string, priority: Priority) => void
   toggleAll: () => void
   clearCompleted: () => void
+  addCategory: (category: string) => void
   exportTodos: () => void
   readImportFile: (file: File) => Promise<TaskBackup>
   importTodos: (backup: TaskBackup, mode: ImportMode) => void
 }
 
 export function useTodos(): UseTodosResult {
-  const [todos, dispatch] = useReducer(todosReducer, undefined, readTodos)
+  const [state, dispatch] = useReducer(todosReducer, undefined, readTodoData)
+  const { todos, categories } = state
 
   useEffect(() => {
-    writeTodos(todos)
-  }, [todos])
+    writeTodoData(state)
+  }, [state])
 
   // Trimming lives here so blank tasks can never reach the list, whichever
   // caller dispatches them.
@@ -85,8 +88,15 @@ export function useTodos(): UseTodosResult {
     dispatch({ type: 'clearedCompleted' })
   }, [])
 
+  const addCategory = useCallback((category: string) => {
+    const trimmedCategory = category.trim()
+    if (trimmedCategory !== '') {
+      dispatch({ type: 'categoryAdded', category: trimmedCategory })
+    }
+  }, [])
+
   const exportTodos = useCallback(() => {
-    const data = JSON.stringify(createBackup(todos), null, 2)
+    const data = JSON.stringify(createBackup(todos, categories), null, 2)
     const blob = new Blob([data], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
@@ -94,7 +104,7 @@ export function useTodos(): UseTodosResult {
     link.download = `toodo-backup-${new Date().toISOString().slice(0, 10)}.json`
     link.click()
     URL.revokeObjectURL(url)
-  }, [todos])
+  }, [todos, categories])
 
   const readImportFile = (file: File) => readBackupFile(file)
 
@@ -109,12 +119,12 @@ export function useTodos(): UseTodosResult {
 
     dispatch(
       mode === 'replace'
-        ? { type: 'imported', todos: importedTodos }
-        : { type: 'addedImported', todos: importedTodos },
+        ? { type: 'imported', todos: importedTodos, categories: backup.categories }
+        : { type: 'addedImported', todos: importedTodos, categories: backup.categories },
     )
   }, [todos])
 
-  return { todos, addTodo, toggleTodo, deleteTodo, editTodo, toggleAll, clearCompleted, exportTodos, readImportFile, importTodos }
+  return { todos, categories, addTodo, toggleTodo, deleteTodo, editTodo, toggleAll, clearCompleted, addCategory, exportTodos, readImportFile, importTodos }
 }
 
 

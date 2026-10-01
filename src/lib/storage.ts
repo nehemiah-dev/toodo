@@ -4,9 +4,15 @@ import { isValidTask } from './taskValidation.ts'
 export const STORAGE_KEY = 'toodo.todos.v1'
 const STORAGE_VERSION = 1
 
+export interface TodoData {
+  todos: readonly Todo[]
+  categories: readonly string[]
+}
+
 interface StoredPayload {
   version: number
   todos: Todo[]
+  categories?: string[]
 }
 
 function getStorage(): Storage | null {
@@ -23,29 +29,29 @@ function getStorage(): Storage | null {
  * unknown version, malformed entries) is discarded so a corrupted value can
  * never break the app.
  */
-export function readTodos(
+export function readTodoData(
   storage: Storage | null = getStorage(),
-): readonly Todo[] {
+): TodoData {
   if (storage === null) {
-    return []
+    return { todos: [], categories: [] }
   }
 
   let raw: string | null
   try {
     raw = storage.getItem(STORAGE_KEY)
   } catch {
-    return []
+    return { todos: [], categories: [] }
   }
 
   if (raw === null) {
-    return []
+    return { todos: [], categories: [] }
   }
 
   let parsed: unknown
   try {
     parsed = JSON.parse(raw)
   } catch {
-    return []
+    return { todos: [], categories: [] }
   }
 
   if (
@@ -54,26 +60,43 @@ export function readTodos(
     !('version' in parsed) ||
     !('todos' in parsed)
   ) {
-    return []
+    return { todos: [], categories: [] }
   }
 
   if (parsed.version !== STORAGE_VERSION || !Array.isArray(parsed.todos)) {
-    return []
+    return { todos: [], categories: [] }
   }
 
   const entries: readonly unknown[] = parsed.todos
-  return entries.filter(isValidTask)
+  const todos = entries.filter(isValidTask)
+  const storedCategories =
+    'categories' in parsed && Array.isArray(parsed.categories)
+      ? parsed.categories.filter(
+          (category): category is string =>
+            typeof category === 'string' && category.trim() !== '',
+        )
+      : []
+  const categories = new Set([
+    ...storedCategories,
+    ...todos.map((todo) => todo.category),
+  ])
+
+  return { todos, categories: Array.from(categories).sort() }
 }
 
-export function writeTodos(
-  todos: readonly Todo[],
+export function writeTodoData(
+  data: TodoData,
   storage: Storage | null = getStorage(),
 ): void {
   if (storage === null) {
     return
   }
 
-  const payload: StoredPayload = { version: STORAGE_VERSION, todos: [...todos] }
+  const payload: StoredPayload = {
+    version: STORAGE_VERSION,
+    todos: [...data.todos],
+    categories: [...new Set(data.categories)].sort(),
+  }
 
   try {
     storage.setItem(STORAGE_KEY, JSON.stringify(payload))
