@@ -7,7 +7,7 @@ interface TodoListProps {
   emptyVariant: EmptyStateVariant
   onToggle: (id: string) => void
   onDelete: (id: string) => void
-  onEdit: (id: string, text: string, priority: Priority, category?: string, dueDate?: number) => void
+  onEdit: (id: string, title: string, description: string, category: string, dueDate: string, priority: Priority) => void
 }
 
 function TodoList({

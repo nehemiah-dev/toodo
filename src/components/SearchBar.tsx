@@ -1,14 +1,13 @@
-import { useRef, type FormEvent } from 'react'
+import type { FormEvent, RefObject } from 'react'
 
 interface SearchBarProps {
   value: string
   onChange: (value: string) => void
   onClear: () => void
+  inputRef: RefObject<HTMLInputElement | null>
 }
 
-function SearchBar({ value, onChange, onClear }: SearchBarProps) {
-  const inputRef = useRef<HTMLInputElement>(null)
-
+function SearchBar({ value, onChange, onClear, inputRef }: SearchBarProps) {
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
   }

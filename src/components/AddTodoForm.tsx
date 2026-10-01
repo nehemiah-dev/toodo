@@ -1,17 +1,18 @@
-import { useRef, useState, type FormEvent } from 'react'
+import { useState, type FormEvent, type RefObject } from 'react'
 import type { Priority } from '../types.ts'
 
 interface AddTodoFormProps {
-  onAdd: (text: string, priority: Priority, category?: string, dueDate?: number) => void
+  onAdd: (title: string, description: string, category: string, dueDate: string, priority: Priority) => void
+  titleInputRef: RefObject<HTMLInputElement | null>
 }
 
-function AddTodoForm({ onAdd }: AddTodoFormProps) {
-  const [text, setText] = useState('')
+function AddTodoForm({ onAdd, titleInputRef }: AddTodoFormProps) {
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
   const [priority, setPriority] = useState<Priority>('medium')
   const [category, setCategory] = useState('')
   const [dueDate, setDueDate] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
-  const canSubmit = text.trim() !== ''
+  const canSubmit = title.trim() !== '' && category.trim() !== '' && dueDate !== ''
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -20,35 +21,46 @@ function AddTodoForm({ onAdd }: AddTodoFormProps) {
       return
     }
 
-    const dueDateMs = dueDate ? new Date(dueDate).getTime() : undefined
-    const categoryValue = category.trim() !== '' ? category.trim() : undefined
-
-    onAdd(text, priority, categoryValue, dueDateMs)
-    setText('')
+    onAdd(title, description, category, dueDate, priority)
+    setTitle('')
+    setDescription('')
     setCategory('')
     setDueDate('')
     setPriority('medium')
-    inputRef.current?.focus()
+    titleInputRef.current?.focus()
   }
 
   return (
     <form className="add-form" onSubmit={handleSubmit}>
       <div className="add-form__main">
         <label className="visually-hidden" htmlFor="new-todo">
-          New task
+          Task title
         </label>
         <input
-          ref={inputRef}
+          ref={titleInputRef}
           id="new-todo"
           name="text"
           className="add-form__input"
           type="text"
-          value={text}
-          onChange={(event) => setText(event.target.value)}
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
           placeholder="What needs doing?"
+          required
           autoComplete="off"
         />
       </div>
+
+      <label className="visually-hidden" htmlFor="new-description">
+        Description (optional)
+      </label>
+      <textarea
+        id="new-description"
+        className="add-form__input"
+        value={description}
+        onChange={(event) => setDescription(event.target.value)}
+        placeholder="Add a description (optional)"
+        rows={2}
+      />
 
       <div className="add-form__metadata">
         <div className="add-form__field">
@@ -59,7 +71,12 @@ function AddTodoForm({ onAdd }: AddTodoFormProps) {
             id="new-priority"
             className="add-form__select"
             value={priority}
-            onChange={(e) => setPriority(e.target.value as Priority)}
+            onChange={(event) => {
+              const value = event.target.value
+              if (value === 'low' || value === 'medium' || value === 'high') {
+                setPriority(value)
+              }
+            }}
           >
             <option value="low">Low</option>
             <option value="medium">Medium</option>
@@ -73,12 +90,14 @@ function AddTodoForm({ onAdd }: AddTodoFormProps) {
           </label>
           <input
             id="new-category"
+            list="category-suggestions"
             className="add-form__input add-form__input--small"
             type="text"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            placeholder="Optional"
+            placeholder="e.g. Work"
             autoComplete="off"
+            required
           />
         </div>
 
@@ -92,6 +111,7 @@ function AddTodoForm({ onAdd }: AddTodoFormProps) {
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
+            required
           />
         </div>
 
@@ -99,6 +119,11 @@ function AddTodoForm({ onAdd }: AddTodoFormProps) {
           Add
         </button>
       </div>
+      <datalist id="category-suggestions">
+        <option value="Work" />
+        <option value="Personal" />
+        <option value="Learning" />
+      </datalist>
     </form>
   )
 }
