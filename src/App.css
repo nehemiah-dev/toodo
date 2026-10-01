@@ -828,7 +828,7 @@ textarea.todo-item__edit-input {
 .add-form__input {
   flex: 1;
   padding: var(--space-3);
-  background-color: var(--color-surface);
+  background-color: var(--color-sidebar-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   font-size: 0.9375rem;
@@ -837,6 +837,7 @@ textarea.todo-item__edit-input {
 }
 
 .add-form__input:focus {
+  background-color: var(--color-surface);
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px rgb(from var(--color-accent) r g b / 15%);
 }
@@ -873,7 +874,7 @@ textarea.add-form__input {
 
 .add-form__select {
   padding: var(--space-2) var(--space-3);
-  background-color: var(--color-surface);
+  background-color: var(--color-sidebar-bg);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   cursor: pointer;
