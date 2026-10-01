@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import AddTodoForm from './components/AddTodoForm.tsx'
-import AdvancedFilters, {
-  type AdvancedFilterState,
-} from './components/AdvancedFilters.tsx'
 import SearchBar from './components/SearchBar.tsx'
+import TaskModal from './components/TaskModal.tsx'
 import ThemeToggle from './components/ThemeToggle.tsx'
 import TodoFilters from './components/TodoFilters.tsx'
 import TodoList from './components/TodoList.tsx'
@@ -14,7 +11,6 @@ import {
   areAllCompleted,
   countActive,
   filterByCategory,
-  filterByPriority,
   filterTodos,
   getUniqueCategories,
   searchTodos,
@@ -38,16 +34,13 @@ function App() {
   } = useTodos()
 
   const [filter, setFilter] = useState<Filter>('all')
+  const [categoryFilter, setCategoryFilter] = useState<string | null>(null)
   const [sortBy, setSortBy] = useState<SortBy>('dueDate')
   const [searchQuery, setSearchQuery] = useState('')
+  const [modalOpen, setModalOpen] = useState(false)
   const [notice, setNotice] = useState('')
-  const [advancedFilters, setAdvancedFilters] = useState<AdvancedFilterState>({
-    priorities: new Set(),
-    categories: new Set(),
-  })
 
   const searchInputRef = useRef<HTMLInputElement>(null)
-  const titleInputRef = useRef<HTMLInputElement>(null)
   const importFileRef = useRef<HTMLInputElement>(null)
 
   const activeCount = countActive(todos)
@@ -57,10 +50,11 @@ function App() {
   const visibleTodos = useMemo(() => {
     let result = filterTodos(todos, filter)
     result = searchTodos(result, searchQuery)
-    result = filterByPriority(result, advancedFilters.priorities)
-    result = filterByCategory(result, advancedFilters.categories)
+    if (categoryFilter !== null) {
+      result = filterByCategory(result, new Set([categoryFilter]))
+    }
     return sortTodos(result, sortBy)
-  }, [todos, filter, searchQuery, advancedFilters, sortBy])
+  }, [todos, filter, searchQuery, categoryFilter, sortBy])
 
   // Auto-dismiss toast
   useEffect(() => {
@@ -69,20 +63,22 @@ function App() {
     return () => window.clearTimeout(t)
   }, [notice])
 
-  // Keyboard shortcuts: N → focus new task, / → focus search
+  // Keyboard shortcuts: N → open modal, / → focus search
   useEffect(() => {
     function handleShortcut(event: KeyboardEvent) {
       if (event.altKey || event.ctrlKey || event.metaKey || event.isComposing) return
       const target = event.target
       if (
         target instanceof HTMLElement &&
-        (target.isContentEditable || target.closest('input, textarea, select') !== null)
-      ) return
+        (target.isContentEditable ||
+          target.closest('input, textarea, select') !== null)
+      )
+        return
       if (document.querySelector('dialog[open]')) return
 
       if (event.key.toLowerCase() === 'n') {
         event.preventDefault()
-        titleInputRef.current?.focus()
+        setModalOpen(true)
       } else if (event.key === '/') {
         event.preventDefault()
         searchInputRef.current?.focus()
@@ -127,7 +123,12 @@ function App() {
   }
 
   function handleClearCompleted() {
-    if (completedCount > 0 && window.confirm(`Clear ${completedCount} completed task${completedCount === 1 ? '' : 's'}?`)) {
+    if (
+      completedCount > 0 &&
+      window.confirm(
+        `Clear ${completedCount} completed task${completedCount === 1 ? '' : 's'}?`,
+      )
+    ) {
       clearCompleted()
       setNotice('Completed tasks cleared.')
     }
@@ -147,25 +148,22 @@ function App() {
   async function handleImportFile(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0]
     if (!file) return
-    // Reset so the same file can be re-selected later
     event.target.value = ''
 
     let backup: TaskBackup
     try {
       backup = await readImportFile(file)
     } catch (error) {
-      setNotice(error instanceof Error ? error.message : 'Could not read backup.')
+      setNotice(
+        error instanceof Error ? error.message : 'Could not read backup.',
+      )
       return
     }
 
-    // Prompt the user for import mode via confirm dialog.
-    // Two questions to distinguish three paths: cancel, add, replace.
     const wantsReplace = window.confirm(
       `Found ${backup.tasks.length} task${backup.tasks.length === 1 ? '' : 's'}.\n\n` +
-        'Replace all current tasks with the imported ones?\n\n' +
-        'OK = Replace all   Cancel = Add to existing',
+        'Replace all current tasks?\n\nOK = Replace   Cancel = Add to existing',
     )
-
     const mode: ImportMode = wantsReplace ? 'replace' : 'add'
 
     if (mode === 'replace' && todos.length > 0) {
@@ -183,17 +181,64 @@ function App() {
     )
   }
 
+  // Derive a page title based on the active category filter
+  const pageTitle = categoryFilter !== null
+    ? categoryFilter
+    : { all: 'Tasks', active: 'Active tasks', completed: 'Completed tasks' }[filter]
+
+  const taskCount = visibleTodos.length
+
   return (
     <div className="app">
-      {/* ── Header ───────────────────────────────────────────────────── */}
-      <header className="app__header">
-        <div className="app__header-start">
-          <h1 className="app__title">Toodo</h1>
+      {/* ── Sidebar ──────────────────────────────────────────────────── */}
+      <aside className="sidebar" aria-label="Navigation">
+        {/* Logo */}
+        <div className="sidebar__logo">
+          <span className="sidebar__logo-mark" aria-hidden="true">✓</span>
+          <span className="sidebar__logo-text">Toodo</span>
         </div>
-        <div className="app__header-end">
+
+        {/* Status nav */}
+        <nav aria-label="Filter tasks by status">
+          <TodoFilters
+            activeFilter={categoryFilter !== null ? null : filter}
+            counts={{ all: todos.length, active: activeCount, completed: completedCount }}
+            onFilterChange={(f) => {
+              setFilter(f)
+              setCategoryFilter(null)
+            }}
+          />
+        </nav>
+
+        {/* Categories */}
+        {availableCategories.length > 0 && (
+          <section className="sidebar__section" aria-label="Filter by category">
+            <h2 className="sidebar__section-title">Categories</h2>
+            <ul className="sidebar__category-list">
+              {availableCategories.map((cat) => (
+                <li key={cat}>
+                  <button
+                    type="button"
+                    className={`sidebar__category-btn${categoryFilter === cat ? ' sidebar__category-btn--active' : ''}`}
+                    onClick={() =>
+                      setCategoryFilter(categoryFilter === cat ? null : cat)
+                    }
+                    aria-pressed={categoryFilter === cat}
+                  >
+                    <span className="sidebar__category-dot" aria-hidden="true" />
+                    {cat}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {/* Sidebar footer: data actions + theme */}
+        <div className="sidebar__footer">
           <button
             type="button"
-            className="header-action"
+            className="sidebar__action"
             onClick={handleExport}
             disabled={todos.length === 0}
             title="Export tasks as JSON backup"
@@ -202,7 +247,7 @@ function App() {
           </button>
           <button
             type="button"
-            className="header-action"
+            className="sidebar__action"
             onClick={() => importFileRef.current?.click()}
             title="Import tasks from JSON backup"
           >
@@ -218,44 +263,36 @@ function App() {
           />
           <ThemeToggle />
         </div>
-      </header>
+      </aside>
 
-      {/* ── Add form ─────────────────────────────────────────────────── */}
-      <section className="app__create" aria-label="Add a new task">
-        <AddTodoForm onAdd={handleAdd} titleInputRef={titleInputRef} />
-      </section>
+      {/* ── Main content ─────────────────────────────────────────────── */}
+      <main className="main" id="main-content">
+        {/* Page header */}
+        <div className="main__header">
+          <h1 className="main__title">
+            {pageTitle}
+            <span className="main__count" aria-label={`${taskCount} tasks`}>
+              ({taskCount})
+            </span>
+          </h1>
 
-      {/* ── List panel ───────────────────────────────────────────────── */}
-      <main className="app__panel">
-        {/* Toolbar: search + status filters + sort + advanced filters */}
-        <div className="toolbar">
-          <div className="toolbar__top">
-            <SearchBar
-              inputRef={searchInputRef}
-              value={searchQuery}
-              onChange={setSearchQuery}
-              onClear={() => setSearchQuery('')}
-            />
-            <TodoFilters
-              activeFilter={filter}
-              counts={{ all: todos.length, active: activeCount, completed: completedCount }}
-              onFilterChange={setFilter}
-            />
-          </div>
-          <div className="toolbar__bottom">
-            <AdvancedFilters
-              filters={advancedFilters}
-              availableCategories={availableCategories}
-              onChange={setAdvancedFilters}
-            />
+          <div className="main__header-actions">
             <div className="sort-control">
-              <label htmlFor="sort-todos">Sort</label>
+              <label htmlFor="sort-todos" className="sort-control__label">
+                Sort
+              </label>
               <select
                 id="sort-todos"
+                className="sort-control__select"
                 value={sortBy}
                 onChange={(event) => {
                   const v = event.target.value
-                  if (v === 'dueDate' || v === 'priority' || v === 'createdAt' || v === 'title') {
+                  if (
+                    v === 'dueDate' ||
+                    v === 'priority' ||
+                    v === 'createdAt' ||
+                    v === 'title'
+                  ) {
                     setSortBy(v)
                   }
                 }}
@@ -268,6 +305,14 @@ function App() {
             </div>
           </div>
         </div>
+
+        {/* Search */}
+        <SearchBar
+          inputRef={searchInputRef}
+          value={searchQuery}
+          onChange={setSearchQuery}
+          onClear={() => setSearchQuery('')}
+        />
 
         {/* Task list */}
         <TodoList
@@ -288,8 +333,26 @@ function App() {
         />
       </main>
 
-      <footer className="app__footer">Tasks stay in this browser.</footer>
+      {/* ── FAB ──────────────────────────────────────────────────────── */}
+      <button
+        type="button"
+        className="fab"
+        onClick={() => setModalOpen(true)}
+        aria-label="Add a new task"
+        title="Add task (N)"
+      >
+        <span aria-hidden="true">+</span>
+        <span>Add Task</span>
+      </button>
 
+      {/* ── Task modal ───────────────────────────────────────────────── */}
+      <TaskModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onAdd={handleAdd}
+      />
+
+      {/* ── Toast ────────────────────────────────────────────────────── */}
       {notice && (
         <div className="app__toast" role="status" aria-live="polite">
           {notice}
